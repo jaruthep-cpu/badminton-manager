@@ -74,18 +74,17 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;borde
 </div>
 
 <section id="players">
-<div class="card"><div class="row"><div class="grow"><div class="big" id="pc">0</div><div class="small">พร้อมจัดเกม</div><div class="small" id="arrivalSummary">🟢 0 มาแล้ว · ⏳ 0 กำลังมา · ⚪ 0 ยังไม่มา</div></div><button class="secondary" onclick="sample()">ตัวอย่าง 12 คน</button><button class="danger" onclick="clearAll()">ล้าง</button></div></div>
+<div class="card"><div class="row"><div class="grow"><div class="big" id="pc">0</div><div class="small">พร้อมจัดเกม</div><div class="small" id="arrivalSummary">🟢 0 มาแล้ว · ⚪ 0 ยังไม่มา</div></div><button class="secondary" onclick="sample()">ตัวอย่าง 12 คน</button><button class="danger" onclick="clearAll()">ล้าง</button></div></div>
 <div class="card"><h3>สมาชิกประจำ / ผู้เล่นวันนี้</h3>
-<div class="small">เช็กสถานะให้ตรงกับหน้างาน: <b>⏳ กำลังมา</b> = รอที่สนาม, <b>🟢 มาแล้ว</b> = พร้อมจัดเกม, <b>⚪ ยังไม่มา</b> = ยังไม่ยืนยัน</div>
+<div class="small">เช็กสถานะให้ตรงกับหน้างาน: <b>🟢 มาแล้ว</b> = พร้อมจัดเกม, <b>⚪ ยังไม่มา</b> = ยังไม่ยืนยัน</div>
 <br>
 <div class="row">
   <button class="secondary" onclick="markAllArrived()">🟢 ทุกคนมาแล้ว</button>
-  <button class="secondary" onclick="markAllComing()">⏳ ทุกคนกำลังมา</button>
-  <button class="muted" onclick="markAllNotArrived()">⚪ รีเซ็ตเป็นยังไม่มา</button>
+  <button class="muted" onclick="markAllNotArrived()">⚪ ทุกคนยังไม่มา</button>
 </div>
 <br><h3>เพิ่มผู้เล่น</h3><div class="grid"><div><label>ชื่อ</label><input id="pn" placeholder="เช่น เจฟ"></div><div><label>ระดับ</label><select id="pl"><option>BB</option><option>BG</option><option>N</option></select></div><div style="align-self:end"><button class="primary" style="width:100%" onclick="add()">+ เพิ่ม</button></div></div></div>
 <div class="card"><h3>รายชื่อ</h3>
-<div class="notice">ระดับ: BB=1 • BG=2 • N=3 • <b>ระบบจะเอาเฉพาะ 🟢 มาแล้ว ไปจัดคอร์ต</b> • เปลี่ยนสถานะได้ทุกคน</div>
+<div class="notice">ระดับ: BB=1 • BG=2 • N=3 • <b>ระบบจะเอาเฉพาะ 🟢 มาแล้ว ไปจัดคอร์ต</b> • เปลี่ยนเป็น “มาแล้ว / ยังไม่มา” ได้</div>
 <div id="plist"></div></div>
 </section>
 
@@ -100,7 +99,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;borde
 </div>
 <div class="card">
 <div class="statgrid"><div class="stat"><span class="small">มา</span><br><b id="gc">0</b></div><div class="stat"><span class="small">คอร์ต</span><br><b id="cc">0</b></div><div class="stat"><span class="small">รอบ</span><br><b id="rc">0</b></div><div class="stat"><span class="small">พักสะสม</span><br><b id="wc">0</b></div></div><br>
-<div class="notice">แต่ละคอร์ตมี 6 คน • 1 เกมใช้ 4 คน • 2 คนพัก • <b>🤖 ระบบจัดให้อัตโนมัติจาก 🟢 มาแล้วเท่านั้น</b> • ⏳ กำลังมาและ ⚪ ยังไม่มาไม่ถูกจัด • คนมาสายให้เปลี่ยนเป็น 🟢 แล้วกด “จัดอัตโนมัติ” สำหรับรอบถัดไป</div><br>
+<div class="notice">แต่ละคอร์ตมี 6 คน • 1 เกมใช้ 4 คน • 2 คนพัก • <b>🤖 ระบบจัดให้อัตโนมัติจาก 🟢 มาแล้วเท่านั้น</b> • ⚪ ยังไม่มาไม่ถูกจัด • เมื่อมาถึงให้เปลี่ยนเป็น 🟢 แล้วกด “จัดอัตโนมัติ” สำหรับรอบถัดไป</div><br>
 <div class="grid">
 <div><label>จำนวนรอบที่ต้องการ</label><select id="targetRounds"><option value="3">3 รอบ</option><option value="5">5 รอบ</option><option value="8">8 รอบ</option><option value="10">10 รอบ</option></select></div>
 <div><label>โหมด</label><div class="notice">🤖 <b>อัตโนมัติ</b> — ระบบคำนวณให้เอง</div></div>
@@ -138,6 +137,7 @@ const pts={BB:1,BG:2,N:3};
 let players=JSON.parse(localStorage.getItem(PKEY)||'[]');
 players.forEach(p=>{
   if(!p.status) p.status=p.present?'arrived':'absent';
+  p.status=p.status==='arrived'?'arrived':'absent';
   p.present=p.status==='arrived';
 });
 let session=JSON.parse(localStorage.getItem(SKEY)||'{"rounds":[],"play":{},"rest":{},"partner":{},"opponent":{},"selected":0}');
@@ -218,14 +218,14 @@ function closeSession(){if(confirm('ปิดวันเล่นนี้?')){
 function save(){localStorage.setItem(PKEY,JSON.stringify(players));localStorage.setItem(SKEY,JSON.stringify(session));}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
 function tab(id,b){document.querySelectorAll('section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');render();}
-function add(){let n=pn.value.trim(),l=pl.value;if(!n)return alert('ใส่ชื่อก่อน');players.push({id:crypto.randomUUID(),name:n,level:l,score:pts[l],status:'coming',present:false});pn.value='';save();render();}
+function add(){let n=pn.value.trim(),l=pl.value;if(!n)return alert('ใส่ชื่อก่อน');players.push({id:crypto.randomUUID(),name:n,level:l,score:pts[l],status:'absent',present:false});pn.value='';save();render();}
 function sample(){players=[['A','BB'],['เจฟ','BB'],['จำปูน','BG'],['นัท','BG'],['ปาล์ม','BG'],['เบียร์','N'],['ฟิว','N'],['โบว์','N'],['พี่บอส','BG'],['ฝน','BB'],['นาย','N'],['แจ๋ม','BG']].map((x,i)=>({id:'p'+i,name:x[0],level:x[1],score:pts[x[1]],status:'arrived',present:true}));resetSession(false);save();render();}
 function clearAll(){if(confirm('ล้างรายชื่อทั้งหมด?')){players=[];resetSession(false);save();render();}}
 function changeLevel(i,l){players[i].level=l;players[i].score=pts[l];save();render();}
-function setStatus(i,status){players[i].status=status;players[i].present=status==='arrived';save();render();}
+function setStatus(i,status){status=status==='arrived'?'arrived':'absent';players[i].status=status;players[i].present=status==='arrived';save();render();}
 function toggle(i){setStatus(i,players[i].status==='arrived'?'absent':'arrived');}
 function markAllArrived(){players.forEach(p=>{p.status='arrived';p.present=true});save();render();}
-function markAllComing(){players.forEach(p=>{p.status='coming';p.present=false});save();render();}
+function markAllComing(){markAllNotArrived();}
 function markAllNotArrived(){players.forEach(p=>{p.status='absent';p.present=false});save();render();}
 function del(i){players.splice(i,1);save();render();}
 function resetSession(confirmIt=true){if(confirmIt&&!confirm('เริ่มวันใหม่และล้างประวัติรอบทั้งหมด?'))return;session={rounds:[],play:{},rest:{},partner:{},opponent:{},selected:0};save();render();}
@@ -714,10 +714,9 @@ function render(){
  rc.textContent=session.rounds.length;
  wc.textContent=Object.values(session.rest).reduce((s,x)=>s+x,0);
  const arrived=players.filter(p=>p.status==='arrived').length;
- const coming=players.filter(p=>p.status==='coming').length;
- const absent=players.length-arrived-coming;
+ const absent=players.length-arrived;
  const sum=document.getElementById('arrivalSummary');
- if(sum) sum.textContent=`🟢 ${arrived} มาแล้ว · ⏳ ${coming} กำลังมา · ⚪ ${absent} ยังไม่มา`;
+ if(sum) sum.textContent=`🟢 ${arrived} มาแล้ว · ⚪ ${absent} ยังไม่มา`;
  plist.innerHTML=players.length?players.map((p,i)=>{
    const st=p.status|| (p.present?'arrived':'absent');
    return `<div class="player">
@@ -729,8 +728,7 @@ function render(){
      </select>
      <div class="statusGroup">
        <button class="status ${st==='arrived'?'on':''}" onclick="setStatus(${i},'arrived')">🟢 มาแล้ว</button>
-       <button class="status ${st==='coming'?'on':''}" onclick="setStatus(${i},'coming')">⏳ กำลังมา</button>
-       <button class="status ${st==='absent'?'on':''}" onclick="setStatus(${i},'absent')">⚪ ยังไม่มา</button>
+       <button class="status ${st!=='arrived'?'on':''}" onclick="setStatus(${i},'absent')">⚪ ยังไม่มา</button>
      </div>
      <button class="muted" onclick="del(${i})">×</button>
    </div>`;
@@ -743,7 +741,7 @@ render();
 <div id="linePasteHint" style="margin:8px 0;padding:10px 12px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:13px;">
   📋 <b>เพิ่มรายชื่อจาก LINE ได้เลย</b><br>
   ก็อปข้อความทั้งชุดจาก LINE มาวางในช่องชื่อ เช่น <b>1.A 2.เจฟ 3.จำปูน …</b><br>
-  ระบบจะเพิ่มรายชื่อให้อัตโนมัติ → เลือกระดับ <b>BB / BG / N</b> → ตั้งสถานะ <b>กำลังมา / มาแล้ว / ยังไม่มา</b>
+  ระบบจะเพิ่มรายชื่อให้อัตโนมัติ → เลือกระดับ <b>BB / BG / N</b> → ตั้งสถานะ <b>มาแล้ว / ยังไม่มา</b>
 </div>
 
 <script>
@@ -782,7 +780,7 @@ render();
           name,
           level:'BG',
           score:pts['BG'],
-          status:'coming',
+          status:'absent',
           present:false
         });
         added++;
@@ -800,8 +798,8 @@ render();
         input.parentElement.appendChild(msg);
       }
       msg.textContent=added
-        ? `✓ เพิ่มจาก LINE แล้ว ${added} คน — ตอนนี้ทุกคนเป็น “ยังไม่มา” กด “มา” เมื่อถึงสนาม`
-        : 'รายชื่อทั้งหมดมีอยู่แล้ว — เช็กสถานะ “มา/ยังไม่มา” ได้จากรายชื่อด้านล่าง';
+        ? `✓ เพิ่มจาก LINE แล้ว ${added} คน — ตอนนี้ทุกคนเป็น “ยังไม่มา” กด “มาแล้ว” เมื่อถึงสนาม`
+        : 'รายชื่อทั้งหมดมีอยู่แล้ว — เช็กสถานะ “มาแล้ว/ยังไม่มา” ได้จากรายชื่อด้านล่าง';
     });
   }
 
@@ -876,8 +874,8 @@ async function onlineSyncLocalPlayers(){
  for(const p of players){
    try{
      const dbp=await onlineEnsurePlayer(p); p.onlineId=dbp.id;
-     const status=p.status|| (p.present?'arrived':'absent');
-     const r=await sbClient.from('session_players').upsert({session_id:onlineSession.id,player_id:dbp.id,status},{onConflict:'session_id,player_id'});
+     const status=p.status==='arrived'?'arrived':'absent';
+     const r=await sbClient.from('session_players').upsert({session_id:onlineSession.id,player_id:dbp.id,status:status==='arrived'?'arrived':'absent'},{onConflict:'session_id,player_id'});
      if(r.error)throw r.error;
    }catch(e){console.error('sync player',p.name,e);}
  }
@@ -893,7 +891,7 @@ async function onlineLoadMembers(){
    name:x.players?.name||'สมาชิก',
    level:x.players?.level||'BG',
    score:pts[x.players?.level||'BG'],
-   status:x.status||'absent',
+   status:x.status==='arrived'?'arrived':'absent',
    present:x.status==='arrived'
  }));
  save();
@@ -901,6 +899,7 @@ async function onlineLoadMembers(){
 
 async function onlineSetStatusByPlayer(playerId,status){
  if(!onlineSession)return;
+ status=status==='arrived'?'arrived':'absent';
  const r=await sbClient.from('session_players').update({status}).eq('session_id',onlineSession.id).eq('player_id',playerId);
  if(r.error)alert('อัปเดตสถานะไม่สำเร็จ\n'+r.error.message);
 }
@@ -941,13 +940,12 @@ function onlineMemberUI(){
    <select id="memberNamePick"><option value="">-- เลือกชื่อ --</option>${players.map(p=>`<option value="${esc(p.onlineId||p.id)}">${esc(p.name)} (${esc(p.level)})</option>`).join('')}</select>
    <div class="row" style="margin-top:10px">
      <button class="checkBtn arrived" onclick="onlineMemberCheckin('arrived')">🟢 มาแล้ว</button>
-     <button class="checkBtn coming" onclick="onlineMemberCheckin('coming')">⏳ กำลังมา</button>
      <button class="checkBtn absent" onclick="onlineMemberCheckin('absent')">⚪ ยังไม่มา</button>
    </div>
  </div>
  <div class="card">
    <h3>สถานะตอนนี้</h3>
-   <div id="memberStatusList">${players.map(p=>`<div class="memberPick"><div><span class="memberName">${esc(p.name)}</span><span class="memberLevel">${esc(p.level)}</span></div><span>${p.status==='arrived'?'🟢 มาแล้ว':p.status==='coming'?'⏳ กำลังมา':'⚪ ยังไม่มา'}</span></div>`).join('')}</div>
+   <div id="memberStatusList">${players.map(p=>`<div class="memberPick"><div><span class="memberName">${esc(p.name)}</span><span class="memberLevel">${esc(p.level)}</span></div><span>${p.status==='arrived'?'🟢 มาแล้ว':'⚪ ยังไม่มา'}</span></div>`).join('')}</div>
  </div>`;
  const pick=document.getElementById('memberNamePick');
  if(pick){pick.value=localStorage.getItem('bm_member_player_id_'+onlineSession.id)||'';pick.onchange=()=>localStorage.setItem('bm_member_player_id_'+onlineSession.id,pick.value);}
@@ -958,8 +956,8 @@ function onlineOrganizerUI(){
  const card=document.getElementById('sessionCard');
  if(!card)return;
  const tools=document.getElementById('sessionTools');
- const counts={arrived:players.filter(p=>p.status==='arrived').length,coming:players.filter(p=>p.status==='coming').length,absent:players.filter(p=>p.status==='absent').length};
- if(tools)tools.innerHTML=`<div class="row"><button class="secondary" onclick="onlineCopyLink()">📋 คัดลอกลิงก์เช็กชื่อ</button><button class="secondary" onclick="onlineShareLink()">📤 แชร์เข้า LINE</button><span class="small">🟢 ${counts.arrived} · ⏳ ${counts.coming} · ⚪ ${counts.absent}</span></div>`;
+ const counts={arrived:players.filter(p=>p.status==='arrived').length,absent:players.filter(p=>p.status!=='arrived').length};
+ if(tools)tools.innerHTML=`<div class="row"><button class="secondary" onclick="onlineCopyLink()">📋 คัดลอกลิงก์เช็กชื่อ</button><button class="secondary" onclick="onlineShareLink()">📤 แชร์เข้า LINE</button><span class="small">🟢 ${counts.arrived} · ⚪ ${counts.absent}</span></div>`;
 }
 
 function onlineCopyLink(){if(!onlineSession)return;navigator.clipboard?.writeText(onlineJoinUrl(onlineSession.code)).then(()=>alert('คัดลอกลิงก์เช็กชื่อแล้ว')).catch(()=>prompt('คัดลอกลิงก์นี้:',onlineJoinUrl(onlineSession.code)));}
