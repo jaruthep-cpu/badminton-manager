@@ -930,7 +930,7 @@ function onlineMemberUI(){
  playersSection.innerHTML=`
  <div class="onlineMember">
    <b>🌐 วันเล่นออนไลน์</b><br>
-   <span class="small">เลือกชื่อของคุณ แล้วกดสถานะเมื่อมาถึงสนาม ระบบจะอัปเดตให้ผู้จัดทันที</span>
+   <span class="small">เลือกชื่อของคุณ แล้วกด 🟢 มาแล้ว เมื่อมาถึงสนาม ระบบจะอัปเดตให้ผู้จัดทันที</span>
  </div>
  <div class="card">
    <div class="big">${esc(onlineSession.title||onlineSession.name)}</div>
@@ -940,7 +940,6 @@ function onlineMemberUI(){
    <select id="memberNamePick"><option value="">-- เลือกชื่อ --</option>${players.map(p=>`<option value="${esc(p.onlineId||p.id)}">${esc(p.name)} (${esc(p.level)})</option>`).join('')}</select>
    <div class="row" style="margin-top:10px">
      <button class="checkBtn arrived" onclick="onlineMemberCheckin('arrived')">🟢 มาแล้ว</button>
-     <button class="checkBtn absent" onclick="onlineMemberCheckin('absent')">⚪ ยังไม่มา</button>
    </div>
  </div>
  <div class="card">
