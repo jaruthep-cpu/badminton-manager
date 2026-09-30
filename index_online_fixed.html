@@ -1,0 +1,1061 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Badminton Manager - Online Check-in</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f6f4;color:#17332a;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:#087f4f;color:white;padding:18px;position:sticky;top:0;z-index:5}header h1{margin:0;font-size:24px}header p{margin:3px 0 0;font-size:13px;opacity:.9}
+main{max-width:1000px;margin:auto;padding:14px}.card{background:white;border-radius:16px;padding:15px;margin-bottom:13px;box-shadow:0 2px 10px #0000000d}
+.tabs{display:flex;gap:7px;margin-bottom:12px}.tab{flex:1;background:#e8f0ec;color:#28604d}.tab.active{background:#087f4f;color:white}
+button{border:0;border-radius:11px;padding:10px 14px;font-weight:750;cursor:pointer}.primary{background:#0a9f61;color:white}.secondary{background:#e5f4ed;color:#087f4f}.danger{background:#fee9e9;color:#b3261e}.muted{background:#edf1ef;color:#45665a}
+input,select{width:100%;padding:10px;border:1px solid #d5e0db;border-radius:10px;font-size:15px}label{font-size:12px;color:#587168;display:block;margin-bottom:5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.grow{flex:1}.hidden{display:none}.big{font-size:28px;font-weight:800}.small{font-size:12px;color:#62776e}
+.player{display:grid;grid-template-columns:1fr 75px 68px 38px;gap:7px;align-items:center;padding:9px 0;border-bottom:1px solid #edf1ef}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800;text-align:center}.BB{background:#ffe0e8;color:#b01845}.BG{background:#dceaff;color:#1764bd}.N{background:#fff0d4;color:#a95a00}
+.on{background:#dff7e9;color:#087f4f}.off{background:#eee;color:#777}.status{font-size:11px;padding:6px 7px;border-radius:8px}
+.roundbar{display:flex;gap:7px;overflow:auto;margin-bottom:10px}.round{min-width:82px}.round.selected{background:#087f4f;color:#fff}
+.court{border:1px solid #e2ebe6;border-radius:14px;padding:12px;margin-top:10px}.court h3{margin:0 0 8px}.game{border:1px solid #e5ece9;border-radius:12px;padding:10px;background:#fbfdfc}.teams{display:grid;grid-template-columns:1fr 1fr;gap:8px}.team{background:#f1f7f4;border-radius:10px;padding:9px}.score{font-size:12px;color:#587168;margin-top:3px}.rest{margin-top:8px;background:#fff8e5;color:#795900;border-radius:10px;padding:8px;font-size:12px}
+.notice{background:#edf8f2;border-left:4px solid #0a9f61;padding:10px 12px;border-radius:8px;font-size:13px}.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.stat{background:#f7faf8;padding:10px;border-radius:11px}.stat b{font-size:20px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;border-bottom:1px solid #e9efec;text-align:left}th{color:#567066}
+@media(max-width:650px){.player{grid-template-columns:1fr 62px 64px 34px}.teams{grid-template-columns:1fr}.tab{font-size:12px;padding:9px}}
+
+.optionGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.option{border:2px solid #e1e9e5;border-radius:14px;padding:11px;background:#fff}.option:hover{border-color:#0a9f61}.option h4{margin:0 0 8px}.mini{font-size:12px;line-height:1.55}.selectedOpt{border-color:#087f4f;background:#edf8f2}@media(max-width:750px){.optionGrid{grid-template-columns:1fr}}
+
+.sharebox{background:#f5fbf7;border:1px solid #d7ebe1;border-radius:14px;padding:12px;margin-bottom:13px}
+.shareBtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}@media(max-width:650px){.shareBtns{grid-template-columns:1fr}}
+
+.sessionCode{font-size:24px;font-weight:900;letter-spacing:3px;background:#edf8f2;padding:8px 12px;border-radius:10px;display:inline-block}
+.role{padding:4px 8px;border-radius:999px;background:#e8f0ec;font-size:11px;font-weight:800}
+.joinBox{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
+@media(max-width:650px){.joinBox{grid-template-columns:1fr}}
+
+.previewBox{background:#fff;border:2px solid #dfe9e4;border-radius:14px;padding:13px;margin-bottom:13px}
+.previewText{width:100%;min-height:260px;resize:vertical;border:1px solid #d5e0db;border-radius:10px;padding:11px;font:14px/1.55 system-ui;background:#fbfdfc}
+.shareActions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:9px}@media(max-width:650px){.shareActions{grid-template-columns:1fr}}
+
+.statusGroup{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.statusGroup .status{white-space:nowrap}
+@media(max-width:650px){
+  .statusGroup{width:100%;flex-basis:100%}
+  .player{flex-wrap:wrap}
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.onlineMember{background:#eef7ff;border-left:4px solid #2b7de9;padding:12px;border-radius:10px;margin-bottom:12px}
+.memberPick{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #e8efec}
+.memberName{font-weight:800}.memberLevel{font-size:11px;padding:3px 7px;border-radius:999px;background:#edf1ef;margin-left:6px}
+.checkBtn{min-width:120px}.checkBtn.arrived{background:#dff7e9;color:#087f4f}.checkBtn.coming{background:#fff4d6;color:#795900}.checkBtn.absent{background:#eee;color:#777}
+</style>
+</head>
+<body>
+<header><h1>🏸 Badminton Manager ONLINE</h1><p>6–18 คน • 6 คน/คอร์ต • BB=1 / BG=2 / N=3</p></header>
+<main>
+
+<div class="card" id="sessionCard">
+  <div class="row">
+    <div class="grow">
+      <div class="big" id="sessionNameView">ยังไม่ได้สร้างวันเล่น</div>
+      <div class="small" id="sessionMetaView">สร้างรอบเล่น แล้วส่งรหัสให้สมาชิกเข้าร่วม</div>
+    </div>
+    <button class="primary" onclick="createSession()">➕ สร้างวันเล่น</button>
+    <button class="secondary" onclick="joinSessionPrompt()">🔗 เข้าร่วมด้วยรหัส</button>
+  </div>
+  <div id="sessionTools" style="margin-top:10px"></div>
+</div>
+<div class="tabs">
+<button class="tab active" onclick="tab('players',this)">👥 ผู้เล่น</button>
+<button class="tab" onclick="tab('games',this)">🏸 จัดเกม</button>
+<button class="tab" onclick="tab('stats',this)">📊 สถิติ</button>
+<button class="tab" onclick="tab('cost',this)">💰 เงิน</button>
+</div>
+
+<section id="players">
+<div class="card"><div class="row"><div class="grow"><div class="big" id="pc">0</div><div class="small">พร้อมจัดเกม</div><div class="small" id="arrivalSummary">🟢 0 มาแล้ว · ⚪ 0 ยังไม่มา</div></div><button class="secondary" onclick="sample()">ตัวอย่าง 12 คน</button><button class="danger" onclick="clearAll()">ล้าง</button></div></div>
+<div class="card"><h3>สมาชิกประจำ / ผู้เล่นวันนี้</h3>
+<div class="small">เช็กสถานะให้ตรงกับหน้างาน: <b>🟢 มาแล้ว</b> = พร้อมจัดเกม, <b>⚪ ยังไม่มา</b> = ยังไม่ยืนยัน</div>
+<br>
+<div class="row">
+  <button class="secondary" onclick="markAllArrived()">🟢 ทุกคนมาแล้ว</button>
+  <button class="muted" onclick="markAllNotArrived()">⚪ ทุกคนยังไม่มา</button>
+</div>
+<br><h3>เพิ่มผู้เล่น</h3><div class="grid"><div><label>ชื่อ</label><input id="pn" placeholder="เช่น เจฟ"></div><div><label>ระดับ</label><select id="pl"><option>BB</option><option>BG</option><option>N</option></select></div><div style="align-self:end"><button class="primary" style="width:100%" onclick="add()">+ เพิ่ม</button></div></div></div>
+<div class="card"><h3>รายชื่อ</h3>
+<div class="notice">ระดับ: BB=1 • BG=2 • N=3 • <b>ระบบจะเอาเฉพาะ 🟢 มาแล้ว ไปจัดคอร์ต</b> • เปลี่ยนเป็น “มาแล้ว / ยังไม่มา” ได้</div>
+<div id="plist"></div></div>
+</section>
+
+<section id="games" class="hidden">
+<div class="card">
+  <div class="row">
+    <div class="grow"><h3 style="margin:0">📤 แชร์เฉพาะตารางจัดเกม</h3>
+    <div class="small">ข้อความที่แชร์จะมีเฉพาะ รอบ / คอร์ต / คู่ / คนพัก ไม่ส่งระดับ คะแนน สถิติ หรือค่าใช้จ่าย</div></div>
+    <button class="primary" onclick="shareGameOnly()">📤 แชร์เกมนี้</button>
+    <button class="secondary" onclick="shareAllGamesOnly()">🌙 แชร์ทุกเกม</button>
+  </div>
+</div>
+<div class="card">
+<div class="statgrid"><div class="stat"><span class="small">มา</span><br><b id="gc">0</b></div><div class="stat"><span class="small">คอร์ต</span><br><b id="cc">0</b></div><div class="stat"><span class="small">รอบ</span><br><b id="rc">0</b></div><div class="stat"><span class="small">พักสะสม</span><br><b id="wc">0</b></div></div><br>
+<div class="notice">แต่ละคอร์ตมี 6 คน • 1 เกมใช้ 4 คน • 2 คนพัก • <b>🤖 ระบบจัดให้อัตโนมัติจาก 🟢 มาแล้วเท่านั้น</b> • ⚪ ยังไม่มาไม่ถูกจัด • เมื่อมาถึงให้เปลี่ยนเป็น 🟢 แล้วกด “จัดอัตโนมัติ” สำหรับรอบถัดไป</div><br>
+<div class="grid">
+<div><label>จำนวนรอบที่ต้องการ</label><select id="targetRounds"><option value="3">3 รอบ</option><option value="5">5 รอบ</option><option value="8">8 รอบ</option><option value="10">10 รอบ</option></select></div>
+<div><label>โหมด</label><div class="notice">🤖 <b>อัตโนมัติ</b> — ระบบคำนวณให้เอง</div></div>
+</div><br>
+<div class="row">
+<button class="primary grow" onclick="autoNextRound()">🤖 จัดอัตโนมัติ</button>
+<button class="secondary" onclick="autoRounds()">🤖 สร้างรอบที่เหลืออัตโนมัติ</button>
+<button class="danger" onclick="resetSession()">เริ่มวันใหม่</button>
+</div>
+<div class="small" style="margin-top:8px">ระบบเลือกการจัดที่เหมาะที่สุดให้เอง โดยคำนึงถึง <b>ระดับ / คู่ซ้ำ / คู่แข่งซ้ำ / จำนวนเกม / จำนวนพัก</b> ไม่ต้องเลือก A/B/C</div>
+</div>
+<div id="rounds"></div><div id="schedule"></div><div id="fairnessSummary"></div>
+<div id="shareBox"></div>
+<div id="sharePreview"></div>
+</section>
+
+<section id="stats" class="hidden"><div class="card"><h3>📊 สถิติการเล่น</h3><div id="statsBox"></div></div></section>
+
+<section id="cost" class="hidden">
+<div class="card"><h3>💰 ค่าใช้จ่าย</h3><div class="grid">
+<div><label>ค่าสนาม</label><input id="courtCost" type="number" value="760"></div>
+<div><label>ค่าลูก</label><input id="shuttleCost" type="number" value="747"></div>
+<div><label>ค่าอื่น ๆ</label><input id="otherCost" type="number" value="0"></div>
+</div><br><button class="primary" onclick="calc()">คำนวณ</button><div id="costBox" style="margin-top:12px"></div></div>
+</section>
+
+<div class="card notice">
+<b>V8.7:</b> การแชร์จากหน้านี้ส่งเฉพาะข้อมูลการจัดเกม ได้แก่ รอบ, คอร์ต, คู่ และคนพัก ไม่ส่งข้อมูลระดับผู้เล่น, สถิติ หรือค่าใช้จ่าย
+</div>
+</main>
+
+<script>
+const PKEY='bm_players_v2', SKEY='bm_session_v2';
+const pts={BB:1,BG:2,N:3};
+let players=JSON.parse(localStorage.getItem(PKEY)||'[]');
+players.forEach(p=>{
+  if(!p.status) p.status=p.present?'arrived':'absent';
+  p.status=p.status==='arrived'?'arrived':'absent';
+  p.present=p.status==='arrived';
+});
+let session=JSON.parse(localStorage.getItem(SKEY)||'{"rounds":[],"play":{},"rest":{},"partner":{},"opponent":{},"selected":0}');
+let appSession=JSON.parse(localStorage.getItem('bm_app_session_v8')||'null');
+let appRole=localStorage.getItem('bm_role_v8')||'organizer';
+
+function saveApp(){localStorage.setItem('bm_app_session_v8',JSON.stringify(appSession));localStorage.setItem('bm_role_v8',appRole);}
+function makeCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out='';
+  for(let i=0;i<6;i++) out+=chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
+function createSession(){
+  const name=prompt('ตั้งชื่อวันเล่น เช่น ศุกร์ 25 ก.ย.','แบดวันศุกร์');
+  if(!name)return;
+  appSession={id:makeCode(),name,created:new Date().toISOString(),players:[],active:true};
+  appRole='organizer'; saveApp(); syncFromApp(); render();
+}
+function joinSessionPrompt(){
+  const code=(prompt('ใส่รหัสวันเล่น 6 ตัวอักษร','')||'').trim().toUpperCase();
+  if(!code)return;
+  appSession={id:code,name:'วันเล่น '+code,created:new Date().toISOString(),players:[],active:true};
+  appRole='member'; saveApp(); syncFromApp(); render();
+  alert('เข้าร่วมโหมดสมาชิกแล้ว\\nหมายเหตุ: เวอร์ชัน V8 นี้เป็นต้นแบบในเครื่อง ยังไม่มีฐานข้อมูลกลาง');
+}
+function syncFromApp(){
+  if(!appSession)return;
+  if(appSession.players?.length){
+    const map=new Map(players.map(p=>[p.name,p]));
+    appSession.players.forEach(p=>{
+      if(!map.has(p.name)) players.push({...p,id:p.id||crypto.randomUUID(),present:false});
+    });
+  }
+}
+function renderSessionCard(){
+  const title=document.getElementById('sessionNameView'), meta=document.getElementById('sessionMetaView'), tools=document.getElementById('sessionTools');
+  if(!appSession){
+    title.textContent='ยังไม่ได้สร้างวันเล่น';
+    meta.textContent='สร้างรอบเล่น แล้วส่งรหัสให้สมาชิกเข้าร่วม';
+    tools.innerHTML='';
+    return;
+  }
+  title.textContent=appSession.name;
+  meta.innerHTML=`รหัสวันเล่น <span class="sessionCode">${appSession.id}</span> <span class="role">${appRole==='organizer'?'ผู้จัด':'สมาชิก'}</span>`;
+  tools.innerHTML=appRole==='organizer'
+    ? `<div class="row"><button class="secondary" onclick="copyJoinCode()">📋 คัดลอกรหัส</button><button class="secondary" onclick="shareJoin()">📤 แชร์รหัสเข้า LINE</button><button class="danger" onclick="closeSession()">ปิดวันเล่น</button></div>`
+    : `<div class="row"><button class="secondary" onclick="setSelfPresent()">🙋 ฉันมา</button><button class="muted" onclick="leaveSession()">ออกจากวันเล่น</button></div>`;
+}
+function copyJoinCode(){
+  if(!appSession)return;
+  navigator.clipboard?.writeText(appSession.id).then(()=>alert('คัดลอกรหัสแล้ว')).catch(()=>prompt('คัดลอกรหัสนี้:',appSession.id));
+}
+function shareJoin(){
+  if(!appSession)return;
+  const text=`🏸 ${appSession.name}\\nรหัสเข้าร่วม: ${appSession.id}\\nเปิด Badminton Manager แล้วเลือก “เข้าร่วมด้วยรหัส”`;
+  const url='https://line.me/R/msg/text/?text='+encodeURIComponent(text);
+  window.open(url,'_blank');
+}
+function setSelfPresent(){
+  const n=prompt('ใส่ชื่อของคุณ');
+  if(!n)return;
+  let p=players.find(x=>x.name===n);
+  if(!p){p={id:crypto.randomUUID(),name:n,level:'BG',score:2,status:'arrived',present:true};players.push(p);}
+  p.status='arrived';
+  p.present=true;
+  if(appSession){
+    appSession.players=appSession.players||[];
+    const existing=appSession.players.find(x=>x.name===p.name);
+    if(existing) existing.present=true;
+    else appSession.players.push({...p});
+  }
+  save();saveApp();render();
+}
+function leaveSession(){appSession=null;saveApp();render();}
+function closeSession(){if(confirm('ปิดวันเล่นนี้?')){appSession.active=false;saveApp();render();}}
+
+function save(){localStorage.setItem(PKEY,JSON.stringify(players));localStorage.setItem(SKEY,JSON.stringify(session));}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+function tab(id,b){document.querySelectorAll('section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');render();}
+function add(){let n=pn.value.trim(),l=pl.value;if(!n)return alert('ใส่ชื่อก่อน');players.push({id:crypto.randomUUID(),name:n,level:l,score:pts[l],status:'absent',present:false});pn.value='';save();render();}
+function sample(){players=[['A','BB'],['เจฟ','BB'],['จำปูน','BG'],['นัท','BG'],['ปาล์ม','BG'],['เบียร์','N'],['ฟิว','N'],['โบว์','N'],['พี่บอส','BG'],['ฝน','BB'],['นาย','N'],['แจ๋ม','BG']].map((x,i)=>({id:'p'+i,name:x[0],level:x[1],score:pts[x[1]],status:'arrived',present:true}));resetSession(false);save();render();}
+function clearAll(){if(confirm('ล้างรายชื่อทั้งหมด?')){players=[];resetSession(false);save();render();}}
+function changeLevel(i,l){players[i].level=l;players[i].score=pts[l];save();render();}
+function setStatus(i,status){status=status==='arrived'?'arrived':'absent';players[i].status=status;players[i].present=status==='arrived';save();render();}
+function toggle(i){setStatus(i,players[i].status==='arrived'?'absent':'arrived');}
+function markAllArrived(){players.forEach(p=>{p.status='arrived';p.present=true});save();render();}
+function markAllComing(){markAllNotArrived();}
+function markAllNotArrived(){players.forEach(p=>{p.status='absent';p.present=false});save();render();}
+function del(i){players.splice(i,1);save();render();}
+function resetSession(confirmIt=true){if(confirmIt&&!confirm('เริ่มวันใหม่และล้างประวัติรอบทั้งหมด?'))return;session={rounds:[],play:{},rest:{},partner:{},opponent:{},selected:0};save();render();}
+function active(){return players.filter(p=>p.present);}
+function initStats(){active().forEach(p=>{session.play[p.id]??=0;session.rest[p.id]??=0;});}
+function pairKey(a,b){return [a.id,b.id].sort().join('|');}
+function count(map,k){return map[k]||0;}
+
+// เลือก 6 คนต่อคอร์ต: ให้คนที่เล่นน้อย/พักมากได้ลงก่อน และคุมคะแนนรวมคอร์ตให้ใกล้กัน
+function chooseCourts(){
+ initStats(); let all=active(), nc=Math.max(1,Math.floor(all.length/6));
+ let ranked=[...all].sort((a,b)=>{
+   let da=(session.play[a.id]||0)-(session.play[b.id]||0);
+   if(da!==0)return da;
+   let ra=(session.rest[a.id]||0)-(session.rest[b.id]||0);
+   if(ra!==0)return -ra;
+   return a.score-b.score;
+ });
+ let chosen=ranked.slice(0,nc*6);
+ let courts=Array.from({length:nc},()=>[]);
+ // Greedy balance by current score
+ chosen.sort((a,b)=>b.score-a.score);
+ for(const p of chosen){
+   let c=courts.reduce((best,x,i)=>x.reduce((s,q)=>s+q.score,0)<courts[best].reduce((s,q)=>s+q.score,0)?i:best,0);
+   if(courts[c].length<6) courts[c].push(p); else {let j=courts.findIndex(x=>x.length<6);courts[j].push(p);}
+ }
+ return {courts,waiting:all.filter(p=>!chosen.some(q=>q.id===p.id))};
+}
+
+// ใน 6 คน: เลือก 4 คนเล่น + 2 คนพัก และจับคู่ให้คะแนนทีมต่างกันน้อยที่สุด
+function makeGame(group){
+ let best=null;
+ for(let a=0;a<6;a++)for(let b=a+1;b<6;b++)for(let c=0;c<6;c++)for(let d=c+1;d<6;d++){
+   let ids=[a,b,c,d]; if(new Set(ids).size<4)continue;
+   let rest=[0,1,2,3,4,5].filter(i=>!ids.includes(i));
+   let ways=[[[a,b],[c,d]],[[a,c],[b,d]],[[a,d],[b,c]]];
+   for(const ps of ways){
+     let s1=group[ps[0][0]].score+group[ps[0][1]].score;
+     let s2=group[ps[1][0]].score+group[ps[1][1]].score;
+     let repeat=0;
+     ps.forEach(t=>repeat+=count(session.partner,pairKey(group[t[0]],group[t[1]]))*3);
+     // ลดการเจอคู่แข่งเดิม
+     repeat+=count(session.opponent,pairKey(group[ps[0][0]],group[ps[1][0]]));
+     repeat+=count(session.opponent,pairKey(group[ps[0][0]],group[ps[1][1]]));
+     repeat+=count(session.opponent,pairKey(group[ps[0][1]],group[ps[1][0]]));
+     repeat+=count(session.opponent,pairKey(group[ps[0][1]],group[ps[1][1]]));
+     let restPenalty=rest.reduce((s,i)=>s+(session.rest[group[i].id]||0),0);
+     // ให้คนที่พักน้อยมีโอกาสพักมากขึ้น
+     let fairness=rest.reduce((s,i)=>s-Math.min(session.rest[group[i].id]||0,99),0);
+     let value=Math.abs(s1-s2)*100+repeat*8+restPenalty+fairness;
+     if(!best||value<best.value)best={ps,rest,s1,s2,diff:Math.abs(s1-s2),value};
+   }
+ }
+ return best;
+}
+function recordGame(group,g){
+ g.ps.forEach(t=>{let a=group[t[0]],b=group[t[1]];session.partner[pairKey(a,b)]=(session.partner[pairKey(a,b)]||0)+1;});
+ let all4=g.ps.flat();
+ for(let i=0;i<all4.length;i++)for(let j=i+1;j<all4.length;j++){
+   // เฉพาะคนคนละทีม
+   let same=g.ps.some(t=>t.includes(all4[i])&&t.includes(all4[j]));
+   if(!same){session.opponent[pairKey(group[all4[i]],group[all4[j]])]=(session.opponent[pairKey(group[all4[i]],group[all4[j]])]||0)+1;}
+ }
+ g.ps.flat().forEach(i=>session.play[group[i].id]=(session.play[group[i].id]||0)+1);
+ g.rest.forEach(i=>session.rest[group[i].id]=(session.rest[group[i].id]||0)+1);
+}
+
+function cloneSession(){
+ return JSON.parse(JSON.stringify(session));
+}
+function scoreCandidate(courts){
+ let score=0;
+ courts.forEach(g=>{
+   let game=makeGameSmart(g);
+   score+=game.diff*300;
+   game.ps.forEach(t=>score+=count(session.partner,pairKey(g[t[0]],g[t[1]]))*50);
+ });
+ return score;
+}
+function generateOption(seed){
+ // Temporarily perturb player ordering while keeping fairness priorities.
+ let original=players.slice();
+ let activePlayers=players.filter(p=>p.present);
+ let rotated=activePlayers.slice(seed).concat(activePlayers.slice(0,seed));
+ // temporarily expose rotated ordering for chooseCourtsSmart
+ let allBackup=players;
+ players=players.map(p=>rotated.find(q=>q.id===p.id)||p);
+ let result=chooseCourtsSmart();
+ players=allBackup;
+ return result;
+}
+function optionMarkup(opt,index){
+ return `<div class="option" id="opt_${index}">
+ <h4>ชุด ${String.fromCharCode(65+index)}</h4>
+ ${opt.courts.map((g,i)=>`<div class="mini"><b>คอร์ต ${i+1}</b>:
+ ${g.map(p=>esc(p.name)+' '+p.level).join(' • ')}</div>`).join('')}
+ ${opt.waiting.length?`<div class="mini"><b>รอ:</b> ${opt.waiting.map(p=>esc(p.name)).join(', ')}</div>`:''}
+ <br><button class="secondary" style="width:100%" onclick="useOption(${index})">เลือกชุดนี้</button>
+ </div>`;
+}
+function previewOptions(){
+ let a=active();
+ if(a.length<6||a.length>18)return alert('ต้องมีผู้เล่น 6–18 คน');
+ let opts=[];
+ for(let seed=0;seed<3;seed++)opts.push(generateOption(seed));
+ document.getElementById('choiceBox').innerHTML=`<div class="card"><h3>🔎 เลือกการจัดที่ต้องการ</h3><div class="small">ทั้ง 3 ชุดยังใช้กติกา 6 คน/คอร์ต และพยายามรักษาสมดุลระดับกับการหมุนผู้เล่น</div><div class="optionGrid">${opts.map(optionMarkup).join('')}</div></div>`;
+ window._options=opts;
+}
+function useOption(i){
+ const opt=window._options?.[i];
+ if(!opt)return;
+ let games=opt.courts.map((g,j)=>({court:j+1,group:g,game:makeGameSmart(g)}));
+ games.forEach(x=>recordGame(x.group,x.game));
+ session.rounds.push({no:session.rounds.length+1,games,waiting:opt.waiting.map(p=>p.id)});
+ session.selected=session.rounds.length-1;save();document.getElementById('choiceBox').innerHTML='';render();
+}
+function autoNextRound(silent=false){
+ const all=active();
+ if(all.length<6||all.length>18){
+   if(!silent)alert('ต้องมีผู้เล่น 🟢 มาแล้ว 6–18 คน');
+   return false;
+ }
+ let best=null,bestScore=Infinity;
+ const tries=Math.min(18,Math.max(6,all.length));
+ for(let seed=0;seed<tries;seed++){
+   const opt=generateOption(seed);
+   const score=scoreCandidate(opt.courts);
+   if(score<bestScore){bestScore=score;best=opt;}
+ }
+ if(!best)return false;
+ const games=best.courts.map((g,j)=>({court:j+1,group:g,game:makeGameSmart(g)}));
+ games.forEach(x=>recordGame(x.group,x.game));
+ session.rounds.push({no:session.rounds.length+1,games,waiting:best.waiting.map(p=>p.id)});
+ session.selected=session.rounds.length-1;
+ save();render();
+ return true;
+}
+
+function nextRound(silent=false){
+ let all=active();
+ if(all.length<6||all.length>18){if(!silent)alert('ต้องมีผู้เล่น 6–18 คน');return;}
+ let {courts,waiting}=chooseCourtsSmart();
+ let games=courts.map((g,i)=>({court:i+1,group:g,game:makeGameSmart(g)}));
+ games.forEach(x=>recordGame(x.group,x.game));
+ session.rounds.push({no:session.rounds.length+1,games,waiting:waiting.map(p=>p.id)});
+ session.selected=session.rounds.length-1; save(); render();
+}
+
+function chooseCourtsSmart(){
+ initStats();
+ let all=active(), nc=Math.max(1,Math.floor(all.length/6));
+ let chosen=[...all].sort((a,b)=>{
+   const pa=(session.play[a.id]||0), pb=(session.play[b.id]||0);
+   if(pa!==pb)return pa-pb;
+   const ra=(session.rest[a.id]||0), rb=(session.rest[b.id]||0);
+   if(ra!==rb)return rb-ra;
+   return a.score-b.score;
+ }).slice(0,nc*6);
+
+ // Distribute strongest/weakest alternately to keep each court's total score close.
+ let courts=Array.from({length:nc},()=>[]);
+ let ordered=[...chosen].sort((a,b)=>b.score-a.score);
+ ordered.forEach((p,idx)=>{
+   let candidates=courts.map((c,i)=>({i,total:c.reduce((z,q)=>z+q.score,0),len:c.length}));
+   candidates=candidates.filter(x=>x.len<6).sort((a,b)=>a.total-b.total);
+   courts[candidates[0].i].push(p);
+ });
+ return {courts,waiting:all.filter(p=>!chosen.some(q=>q.id===p.id))};
+}
+
+function makeGameSmart(group){
+ const mode=document.getElementById('balanceMode')?.value||'fair';
+ let best=null;
+ for(let a=0;a<6;a++)for(let b=a+1;b<6;b++)for(let c=0;c<6;c++)for(let d=c+1;d<6;d++){
+   let ids=[a,b,c,d]; if(new Set(ids).size<4)continue;
+   let rest=[0,1,2,3,4,5].filter(i=>!ids.includes(i));
+   let ways=[[[a,b],[c,d]],[[a,c],[b,d]],[[a,d],[b,c]]];
+   for(const ps of ways){
+     let s1=group[ps[0][0]].score+group[ps[0][1]].score;
+     let s2=group[ps[1][0]].score+group[ps[1][1]].score;
+     let partnerRepeat=0, opponentRepeat=0;
+     ps.forEach(t=>partnerRepeat+=count(session.partner,pairKey(group[t[0]],group[t[1]])));
+     for(const x of ps[0])for(const y of ps[1]) opponentRepeat+=count(session.opponent,pairKey(group[x],group[y]));
+     let restCounts=rest.map(i=>session.rest[group[i].id]||0);
+     let maxRest=Math.max(...restCounts), minRest=Math.min(...restCounts);
+     let restFairness=(maxRest-minRest);
+     let playCounts=group.map(p=>session.play[p.id]||0);
+     let playFairness=Math.max(...playCounts)-Math.min(...playCounts);
+
+     let value;
+     if(mode==='strict'){
+       value=Math.abs(s1-s2)*1000+partnerRepeat*25+opponentRepeat*8+restFairness*3+playFairness*2;
+     }else if(mode==='social'){
+       value=partnerRepeat*1000+opponentRepeat*30+Math.abs(s1-s2)*80+restFairness*5+playFairness*3;
+     }else{
+       value=Math.abs(s1-s2)*300+partnerRepeat*50+opponentRepeat*15+restFairness*25+playFairness*15;
+     }
+     if(!best||value<best.value)best={ps,rest,s1,s2,diff:Math.abs(s1-s2),value};
+   }
+ }
+ return best;
+}
+function renderRounds(){
+ let box=document.getElementById('rounds');if(!session.rounds.length){box.innerHTML='';return}
+ box.innerHTML='<div class="roundbar">'+session.rounds.map((r,i)=>`<button class="round ${i===session.selected?'selected':''}" onclick="selectRound(${i})">รอบ ${r.no}</button>`).join('')+'</div>';
+}
+function selectRound(i){session.selected=i;save();render();}
+function pname(group,ids){return ids.map(i=>{let p=group[i];return esc(p.name)+' <span class="badge '+p.level+'">'+p.level+'</span>'}).join(' + ');}
+function renderSchedule(){
+ let r=session.rounds[session.selected];if(!r){document.getElementById('schedule').innerHTML='<div class="card notice">ยังไม่มีรอบ กด “จัดรอบถัดไป” เพื่อเริ่ม</div>';return}
+ document.getElementById('schedule').innerHTML=r.games.map(c=>`<div class="card court"><h3>🏸 คอร์ต ${c.court} <span class="small">• 6 คน</span></h3>
+ <div class="game"><div class="teams"><div class="team"><b>${pname(c.group,c.game.ps[0])}</b><div class="score">ทีม = ${c.game.s1}</div></div>
+ <div class="team"><b>${pname(c.group,c.game.ps[1])}</b><div class="score">ทีม = ${c.game.s2}</div></div></div>
+ <div class="small" style="margin-top:7px">ต่างกัน ${c.game.diff} คะแนน • ${balanceLabel(c.game)}</div>
+ <div class="row" style="margin-top:8px">
+ <input id="sc_${r.no}_${c.court}_1" type="number" min="0" placeholder="คะแนนทีม 1" value="${c.result?.s1??''}" style="max-width:130px">
+ <input id="sc_${r.no}_${c.court}_2" type="number" min="0" placeholder="คะแนนทีม 2" value="${c.result?.s2??''}" style="max-width:130px">
+ <button class="secondary" onclick="saveResult(${session.selected},${c.court})">บันทึกผล</button>
+ </div></div>
+ <div class="rest">⏸ พัก: ${c.game.rest.map(i=>c.group[i].name+' ('+c.group[i].level+')').join(', ')}</div></div>`).join('')+
+ (r.waiting.length?`<div class="card"><h3>⏳ รอหมุนเข้าคอร์ต</h3><div class="notice">${r.waiting.map(id=>{let p=players.find(x=>x.id===id);return p?esc(p.name)+' ('+p.level+')':''}).join(' • ')}</div></div>`:'');
+}
+
+
+function balanceLabel(g){
+  if(g.diff===0) return 'สมดุลมาก';
+  if(g.diff===1) return 'สมดุล';
+  return 'ต่างระดับ';
+}
+
+function autoRounds(){
+  const target=+document.getElementById('targetRounds').value;
+  const a=active();
+  if(a.length<6||a.length>18)return alert('ต้องมีผู้เล่น 🟢 มาแล้ว 6–18 คน');
+  while(session.rounds.length<target){
+    if(!autoNextRound(true))break;
+  }
+  session.selected=Math.max(0,session.rounds.length-1);
+  save();render();
+}
+
+function saveResult(roundIndex,courtNo){
+  const r=session.rounds[roundIndex], c=r.games.find(x=>x.court===courtNo);
+  if(!c)return;
+  const a=document.getElementById(`sc_${r.no}_${courtNo}_1`).value;
+  const b=document.getElementById(`sc_${r.no}_${courtNo}_2`).value;
+  if(a===''||b==='')return alert('ใส่คะแนนทั้ง 2 ทีมก่อน');
+  c.result={s1:+a,s2:+b};
+  save(); render();
+}
+function goToRound3(){
+  if(session.rounds.length>=3){session.selected=2;save();render();return;}
+  while(session.rounds.length<3) nextRound();
+}
+
+
+
+function gameOnlyRoundText(){
+  const r=session.rounds[session.selected];
+  if(!r)return '';
+  let lines=[`🏸 รอบ ${r.no}`,''];
+  r.games.forEach(c=>{
+    const t1=c.game.ps[0].map(i=>c.group[i].name).join(' + ');
+    const t2=c.game.ps[1].map(i=>c.group[i].name).join(' + ');
+    lines.push(`🏸 คอร์ต ${c.court}`);
+    lines.push(`${t1}  VS  ${t2}`);
+    lines.push(`⏸ พัก: ${c.game.rest.map(i=>c.group[i].name).join(', ')}`);
+    lines.push('');
+  });
+  if(r.waiting?.length){
+    const names=r.waiting.map(id=>players.find(p=>p.id===id)?.name).filter(Boolean);
+    if(names.length)lines.push(`⏳ รอหมุน: ${names.join(', ')}`);
+  }
+  return lines.join('\n');
+}
+function allGamesOnlyText(){
+  if(!session.rounds.length)return '';
+  let lines=['🏸 ตารางจัดเกม','━━━━━━━━━━━━'];
+  session.rounds.forEach(r=>{
+    lines.push(`\n🔵 รอบ ${r.no}`);
+    r.games.forEach(c=>{
+      const t1=c.game.ps[0].map(i=>c.group[i].name).join(' + ');
+      const t2=c.game.ps[1].map(i=>c.group[i].name).join(' + ');
+      lines.push(`คอร์ต ${c.court}: ${t1} VS ${t2}`);
+      lines.push(`⏸ พัก: ${c.game.rest.map(i=>c.group[i].name).join(', ')}`);
+    });
+  });
+  return lines.join('\n');
+}
+
+async function copyTextSafe(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    alert('คัดลอกข้อความแล้ว เปิด LINE แล้ววางลงในกลุ่มได้เลย');
+    return true;
+  }catch(e){
+    const ta=document.createElement('textarea');
+    ta.value=text; document.body.appendChild(ta); ta.select();
+    try{document.execCommand('copy');alert('คัดลอกข้อความแล้ว เปิด LINE แล้ววางลงในกลุ่มได้เลย');}
+    finally{ta.remove();}
+    return true;
+  }
+}
+async function nativeShareText(text,title){
+  if(navigator.share){
+    try{await navigator.share({title,text});return true;}catch(e){}
+  }
+  return false;
+}
+function showSharePreview(text,title){
+  document.getElementById('sharePreview').innerHTML=`<div class="previewBox">
+  <h3 style="margin-top:0">${title}</h3>
+  <div class="small">ตรวจข้อความก่อนส่งได้ และข้อความนี้มีเฉพาะข้อมูลจัดเกม</div>
+  <textarea class="previewText" id="shareTextArea">${esc(text)}</textarea>
+  <div class="shareActions">
+    <button class="primary" onclick="sharePreviewNative()">📱 แชร์</button>
+    <button class="secondary" onclick="copyPreview()">📋 คัดลอก</button>
+    <button class="muted" onclick="closeSharePreview()">ปิด</button>
+  </div></div>`;
+  window._previewShareText=text; window._previewShareTitle=title;
+  document.getElementById('sharePreview').scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function sharePreviewNative(){
+  const text=document.getElementById('shareTextArea')?.value||window._previewShareText||'';
+  const title=window._previewShareTitle||'ตารางจัดเกม';
+  if(!text)return;
+  const ok=await nativeShareText(text,title);
+  if(!ok) await copyTextSafe(text);
+}
+async function copyPreview(){
+  const text=document.getElementById('shareTextArea')?.value||window._previewShareText||'';
+  if(text) await copyTextSafe(text);
+}
+function closeSharePreview(){document.getElementById('sharePreview').innerHTML='';}
+
+async function shareGameOnly(){
+  const text=gameOnlyRoundText();
+  if(!text)return alert('ยังไม่มีรอบให้แชร์');
+  showSharePreview(text,`📤 แชร์รอบ ${session.selected+1}`);
+}
+async function shareAllGamesOnly(){
+  const text=allGamesOnlyText();
+  if(!text)return alert('ยังไม่มีตารางให้แชร์');
+  showSharePreview(text,'🌙 แชร์ตารางจัดเกมทั้งหมด');
+}
+
+function currentRoundText(){
+ const r=session.rounds[session.selected];
+ if(!r)return '';
+ let lines=[`🏸 แบดรอบที่ ${r.no}`,''];
+ r.games.forEach(c=>{
+   lines.push(`คอร์ต ${c.court}`);
+   lines.push(`🏸 ${c.game.ps[0].map(i=>c.group[i].name).join(' + ')}  VS  ${c.game.ps[1].map(i=>c.group[i].name).join(' + ')}`);
+   lines.push(`⏸ พัก: ${c.game.rest.map(i=>c.group[i].name).join(', ')}`);
+   if(c.result)lines.push(`📊 ผล ${c.result.s1} - ${c.result.s2}`);
+   lines.push('');
+ });
+ if(r.waiting?.length){
+   const names=r.waiting.map(id=>players.find(p=>p.id===id)?.name).filter(Boolean);
+   if(names.length)lines.push(`⏳ รอหมุน: ${names.join(', ')}`);
+ }
+ return lines.join('\n');
+}
+
+function fullNightText(){
+  if(!session.rounds.length)return '';
+  let lines=['🏸 ตารางแบดทั้งคืน','━━━━━━━━━━━━'];
+  session.rounds.forEach(r=>{
+    lines.push(`\n🔵 รอบ ${r.no}`);
+    r.games.forEach(c=>{
+      const t1=c.game.ps[0].map(i=>c.group[i].name).join(' + ');
+      const t2=c.game.ps[1].map(i=>c.group[i].name).join(' + ');
+      lines.push(`คอร์ต ${c.court}: ${t1}  VS  ${t2}`);
+      lines.push(`⏸ พัก: ${c.game.rest.map(i=>c.group[i].name).join(', ')}`);
+      if(c.result)lines.push(`📊 ผล: ${c.result.s1} - ${c.result.s2}`);
+    });
+    if(r.waiting?.length){
+      const names=r.waiting.map(id=>players.find(p=>p.id===id)?.name).filter(Boolean);
+      if(names.length)lines.push(`⏳ รอหมุน: ${names.join(', ')}`);
+    }
+  });
+  lines.push('\n━━━━━━━━━━━━');
+  lines.push(`รวม ${session.rounds.length} รอบ`);
+  return lines.join('\n');
+}
+function shareFullNight(){
+  const text=fullNightText();
+  if(!text)return alert('ยังไม่มีตารางให้แชร์');
+  const url='https://line.me/R/msg/text/?text='+encodeURIComponent(text);
+  document.getElementById('shareBox').innerHTML=`<div class="sharebox"><b>🌙 ตารางจัดเกมทั้งหมด</b>
+  <div class="small" style="margin:5px 0 10px">รวมทุกคอร์ตและทุก รอบในข้อความเดียว</div>
+  <div class="shareBtns">
+  <button class="primary" onclick="window.open(window._fullLineUrl,'_blank')">💬 เปิด LINE</button>
+  <button class="secondary" onclick="nativeFullShare()">📱 แชร์</button>
+  <button class="muted" onclick="copyFullNight()">📋 คัดลอก</button>
+  </div></div>`;
+  window._fullLineUrl=url; window._fullText=text;
+}
+async function nativeFullShare(){
+  const text=window._fullText||fullNightText();
+  if(navigator.share){
+    try{await navigator.share({title:'ตารางแบดทั้งคืน',text});}catch(e){}
+  }else copyFullNight();
+}
+async function copyFullNight(){
+  const text=window._fullText||fullNightText();
+  try{
+    await navigator.clipboard.writeText(text);
+    alert('คัดลอกตารางทั้งคืนแล้ว นำไปวางในกลุ่ม LINE ได้เลย');
+  }catch(e){
+    prompt('คัดลอกข้อความนี้ไปส่งใน LINE:',text);
+  }
+}
+
+function shareRound(){
+ const text=currentRoundText();
+ if(!text)return alert('ยังไม่มีรอบให้แชร์');
+ const lineUrl='https://line.me/R/msg/text/?text='+encodeURIComponent(text);
+ document.getElementById('shareBox').innerHTML=`<div class="sharebox"><b>📤 แชร์เฉพาะตารางจัดเกม</b><div class="small" style="margin:5px 0 10px">กด LINE เพื่อส่งเข้ากลุ่ม หรือคัดลอกข้อความไปวางเอง</div><div class="shareBtns">
+ <button class="primary" onclick="openLine()">💬 เปิด LINE</button>
+ <button class="secondary" onclick="nativeShare()">📱 แชร์</button>
+ <button class="muted" onclick="copyRound()">📋 คัดลอก</button></div></div>`;
+ window._lineShareUrl=lineUrl; window._shareText=text;
+}
+function openLine(){
+ if(!window._lineShareUrl)return;
+ window.open(window._lineShareUrl,'_blank');
+}
+async function nativeShare(){
+ const text=window._shareText||currentRoundText();
+ if(!text)return;
+ if(navigator.share){
+   try{await navigator.share({title:'ผลจัดแบด',text});}catch(e){}
+ }else{
+   await copyRound();
+ }
+}
+async function copyRound(){
+ const text=window._shareText||currentRoundText();
+ try{
+   await navigator.clipboard.writeText(text);
+   alert('คัดลอกข้อความแล้ว นำไปวางในกลุ่ม LINE ได้เลย');
+ }catch(e){
+   prompt('คัดลอกข้อความนี้ไปส่งใน LINE:',text);
+ }
+}
+function renderFairnessSummary(){
+  const a=active();
+  if(!a.length){document.getElementById('fairnessSummary').innerHTML='';return;}
+  const plays=a.map(p=>session.play[p.id]||0), rests=a.map(p=>session.rest[p.id]||0);
+  const playDiff=Math.max(...plays)-Math.min(...plays), restDiff=Math.max(...rests)-Math.min(...rests);
+  const avgDiff=session.rounds.reduce((sum,r)=>sum+r.games.reduce((z,c)=>z+c.game.diff,0),0);
+  const games=session.rounds.reduce((sum,r)=>sum+r.games.length,0);
+  const avg=games?(avgDiff/games).toFixed(2):'0';
+  document.getElementById('fairnessSummary').innerHTML=session.rounds.length?`
+  <div class="card"><h3>🎯 ภาพรวมความสมดุล</h3>
+  <div class="statgrid">
+   <div class="stat"><span class="small">ส่วนต่างการเล่น</span><br><b>${playDiff}</b><br><span class="small">ครั้ง</span></div>
+   <div class="stat"><span class="small">ส่วนต่างการพัก</span><br><b>${restDiff}</b><br><span class="small">ครั้ง</span></div>
+   <div class="stat"><span class="small">คะแนนคู่ต่างเฉลี่ย</span><br><b>${avg}</b><br><span class="small">คะแนน</span></div>
+   <div class="stat"><span class="small">รอบทั้งหมด</span><br><b>${session.rounds.length}</b></div>
+  </div></div>`:'';
+}
+
+function renderStats(){
+ initStats();let a=active();document.getElementById('statsBox').innerHTML=a.length?`<table><tr><th>ชื่อ</th><th>ระดับ</th><th>เล่น</th><th>พัก</th><th>ชนะ</th><th>คู่ซ้ำ</th></tr>${a.map(p=>`<tr><td>${esc(p.name)}</td><td><span class="badge ${p.level}">${p.level}</span></td><td>${session.play[p.id]||0}</td><td>${session.rest[p.id]||0}</td><td>${wins(p)}</td><td>${partnerCount(p)}</td></tr>`).join('')}</table>`:'ยังไม่มีข้อมูล';
+}
+function wins(p){
+  let w=0;
+  session.rounds.forEach(r=>r.games.forEach(c=>{
+    if(!c.result)return;
+    let t1=c.game.ps[0],t2=c.game.ps[1];
+    if(t1.some(i=>c.group[i].id===p.id) && c.result.s1>c.result.s2)w++;
+    if(t2.some(i=>c.group[i].id===p.id) && c.result.s2>c.result.s1)w++;
+  }));
+  return w;
+}
+function partnerCount(p){return Object.entries(session.partner).filter(([k])=>k.includes(p.id)).reduce((s,[,v])=>s+v,0)}
+function calc(){let total=+courtCost.value+ +shuttleCost.value+ +otherCost.value,n=active().length;if(!n)return;costBox.innerHTML=`<div class="notice"><b>รวม ${total.toLocaleString()} บาท</b><br>เฉลี่ยเท่ากัน ${ (total/n).toFixed(2)} บาท/คน<br><span class="small">รอบต่อไปสามารถเพิ่มระบบคิดเงินตามชั่วโมงได้</span></div>`}
+function render(){
+ renderSessionCard();
+ let a=active();
+ pc.textContent=a.length;
+ gc.textContent=a.length;
+ cc.textContent=a.length?Math.floor(a.length/6):0;
+ rc.textContent=session.rounds.length;
+ wc.textContent=Object.values(session.rest).reduce((s,x)=>s+x,0);
+ const arrived=players.filter(p=>p.status==='arrived').length;
+ const absent=players.length-arrived;
+ const sum=document.getElementById('arrivalSummary');
+ if(sum) sum.textContent=`🟢 ${arrived} มาแล้ว · ⚪ ${absent} ยังไม่มา`;
+ plist.innerHTML=players.length?players.map((p,i)=>{
+   const st=p.status|| (p.present?'arrived':'absent');
+   return `<div class="player">
+     <b>${esc(p.name)}</b>
+     <select onchange="changeLevel(${i},this.value)">
+       <option ${p.level==='BB'?'selected':''}>BB</option>
+       <option ${p.level==='BG'?'selected':''}>BG</option>
+       <option ${p.level==='N'?'selected':''}>N</option>
+     </select>
+     <div class="statusGroup">
+       <button class="status ${st==='arrived'?'on':''}" onclick="setStatus(${i},'arrived')">🟢 มาแล้ว</button>
+       <button class="status ${st!=='arrived'?'on':''}" onclick="setStatus(${i},'absent')">⚪ ยังไม่มา</button>
+     </div>
+     <button class="muted" onclick="del(${i})">×</button>
+   </div>`;
+ }).join(''):'ยังไม่มีผู้เล่น';
+ renderRounds();renderSchedule();renderFairnessSummary();renderStats();
+}
+render();
+</script>
+
+<div id="linePasteHint" style="margin:8px 0;padding:10px 12px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:13px;">
+  📋 <b>เพิ่มรายชื่อจาก LINE ได้เลย</b><br>
+  ก็อปข้อความทั้งชุดจาก LINE มาวางในช่องชื่อ เช่น <b>1.A 2.เจฟ 3.จำปูน …</b><br>
+  ระบบจะเพิ่มรายชื่อให้อัตโนมัติ → เลือกระดับ <b>BB / BG / N</b> → ตั้งสถานะ <b>มาแล้ว / ยังไม่มา</b>
+</div>
+
+<script>
+/* === V8.5: LINE paste + arrival check-in === */
+(function(){
+  function extractPlayers(text){
+    const out=[], seen=new Set();
+    for(const line of text.split(/\r?\n/)){
+      const m=line.match(/^\s*\d{1,2}\s*(?:[.)]|[-–—])\s*(.+?)\s*$/);
+      if(!m) continue;
+      const name=m[1].replace(/\s+/g,' ').trim();
+      if(!name) continue;
+      const key=name.toLowerCase();
+      if(!seen.has(key)){seen.add(key);out.push(name);}
+    }
+    return out;
+  }
+
+  function install(){
+    const input=document.getElementById('pn');
+    if(!input || input.dataset.linePasteReady) return;
+    input.dataset.linePasteReady='1';
+
+    input.addEventListener('paste',function(e){
+      const text=(e.clipboardData||window.clipboardData)?.getData('text')||'';
+      const names=extractPlayers(text);
+      if(names.length<2) return;
+
+      e.preventDefault();
+      let added=0;
+      for(const name of names){
+        const exists=players.some(p=>p.name.trim().toLowerCase()===name.toLowerCase());
+        if(exists) continue;
+        players.push({
+          id:crypto.randomUUID(),
+          name,
+          level:'BG',
+          score:pts['BG'],
+          status:'absent',
+          present:false
+        });
+        added++;
+      }
+
+      input.value='';
+      save();
+      render();
+      if(typeof onlineSyncLocalPlayers==='function' && onlineSession && onlineRole==='organizer') onlineSyncLocalPlayers();
+
+      let msg=document.getElementById('linePasteMsg');
+      if(!msg){
+        msg=document.createElement('div');
+        msg.id='linePasteMsg';
+        msg.style.cssText='margin-top:6px;padding:8px 10px;border-radius:10px;background:#fff8e5;border:1px solid #f0d58a;color:#795900;font-size:13px;font-weight:650;';
+        input.parentElement.appendChild(msg);
+      }
+      msg.textContent=added
+        ? `✓ เพิ่มจาก LINE แล้ว ${added} คน — ตอนนี้ทุกคนเป็น “ยังไม่มา” กด “มาแล้ว” เมื่อถึงสนาม`
+        : 'รายชื่อทั้งหมดมีอยู่แล้ว — เช็กสถานะ “มาแล้ว/ยังไม่มา” ได้จากรายชื่อด้านล่าง';
+    });
+  }
+
+  const observer=new MutationObserver(install);
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+  install();
+})();
+</script>
+
+<script>
+/* =========================================================
+   V9.1 ONLINE - Supabase realtime check-in
+   ========================================================= */
+const SUPABASE_URL='https://fhgtfduotwakdvdyicox.supabase.co';
+const SUPABASE_KEY='sb_publishable_P6Le1b1rAaNlocQ6CDZiiA_dIjVRA5O';
+const sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let onlineSession=null;
+let onlineRole='organizer';
+let onlineChannel=null;
+let onlineBooted=false;
+let onlineBusy=false;
+
+function onlineCode(){
+ const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s='';
+ for(let i=0;i<6;i++)s+=chars[Math.floor(Math.random()*chars.length)];
+ return s;
+}
+function onlineJoinUrl(code){return location.origin+location.pathname+'?join='+encodeURIComponent(code);}
+function onlineSetLocal(code,role){localStorage.setItem('bm_online_session',code||'');localStorage.setItem('bm_online_role',role||'');}
+function onlineGetSaved(){return {code:localStorage.getItem('bm_online_session')||'',role:localStorage.getItem('bm_online_role')||''};}
+
+async function onlineCreateSession(){
+ const title=prompt('ตั้งชื่อวันเล่น เช่น แบดวันจันทร์ 29 ก.ย.','แบดวันนี้');
+ if(!title)return;
+ const code=onlineCode();
+ const {data,error}=await sbClient.from('sessions').insert({code,title}).select().single();
+ if(error){alert('สร้างวันเล่นออนไลน์ไม่สำเร็จ\n'+error.message);return;}
+ onlineSession=data; onlineRole='organizer'; onlineSetLocal(code,'organizer');
+ appSession={id:code,name:title,created:data.created_at,players:[],active:true}; appRole='organizer'; saveApp();
+ await onlineSyncLocalPlayers();
+ onlineSubscribe();
+ render();
+ alert('สร้างวันเล่นออนไลน์แล้ว\nรหัส: '+code+'\nกด “แชร์ลิงก์เช็กชื่อ” เพื่อส่งเข้า LINE');
+}
+
+async function onlineLoadSession(code){
+ if(!code)return false;
+ const {data,error}=await sbClient.from('sessions').select('*').eq('code',code).maybeSingle();
+ if(error||!data){alert('ไม่พบวันเล่นรหัส '+code);return false;}
+ onlineSession=data; onlineRole='member'; onlineSetLocal(code,'member');
+ appSession={id:data.code,name:data.title,created:data.created_at,players:[],active:true}; appRole='member'; saveApp();
+ await onlineLoadMembers();
+ onlineSubscribe();
+ render();
+ return true;
+}
+
+async function onlineEnsurePlayer(p){
+ let {data,error}=await sbClient.from('players').select('id,name,level').eq('name',p.name).limit(1).maybeSingle();
+ if(error)throw error;
+ if(!data){
+   const r=await sbClient.from('players').insert({name:p.name,level:p.level||'BG'}).select('id,name,level').single();
+   if(r.error)throw r.error; data=r.data;
+ } else if(data.level!==p.level){
+   await sbClient.from('players').update({level:p.level||'BG'}).eq('id',data.id);
+ }
+ return data;
+}
+
+async function onlineSyncLocalPlayers(){
+ if(!onlineSession||onlineRole!=='organizer')return;
+ for(const p of players){
+   try{
+     const dbp=await onlineEnsurePlayer(p); p.onlineId=dbp.id;
+     const status=p.status==='arrived'?'arrived':'absent';
+     const r=await sbClient.from('session_players').upsert({session_id:onlineSession.id,player_id:dbp.id,status:status==='arrived'?'arrived':'absent'},{onConflict:'session_id,player_id'});
+     if(r.error)throw r.error;
+   }catch(e){console.error('sync player',p.name,e);}
+ }
+}
+
+async function onlineLoadMembers(){
+ if(!onlineSession)return;
+ const {data,error}=await sbClient.from('session_players').select('id,status,player_id,players(id,name,level)').eq('session_id',onlineSession.id);
+ if(error){console.error(error);return;}
+ players=(data||[]).map(x=>({
+   id:x.players?.id||x.player_id,
+   onlineId:x.players?.id||x.player_id,
+   name:x.players?.name||'สมาชิก',
+   level:x.players?.level||'BG',
+   score:pts[x.players?.level||'BG'],
+   status:x.status==='arrived'?'arrived':'absent',
+   present:x.status==='arrived'
+ }));
+ save();
+}
+
+async function onlineSetStatusByPlayer(playerId,status){
+ if(!onlineSession)return false;
+ status=status==='arrived'?'arrived':'absent';
+ const r=await sbClient.from('session_players').update({status}).eq('session_id',onlineSession.id).eq('player_id',playerId).select('id,status,player_id');
+ if(r.error){console.error('check-in update',r.error);alert('อัปเดตสถานะไม่สำเร็จ\n'+r.error.message);return false;}
+ if(!r.data || !r.data.length){alert('ไม่พบรายชื่อในวันเล่นนี้\nให้ผู้จัดเพิ่มชื่อนี้ในรายการก่อน');return false;}
+ await onlineLoadMembers();
+ render();
+ return true;
+}
+
+function onlineSubscribe(){
+ if(!onlineSession)return;
+ if(onlineChannel){sbClient.removeChannel(onlineChannel);onlineChannel=null;}
+ onlineChannel=sbClient.channel('bm-session-'+onlineSession.id)
+  .on('postgres_changes',{event:'*',schema:'public',table:'session_players',filter:'session_id=eq.'+onlineSession.id},async()=>{
+    await onlineLoadMembers();
+    if(onlineRole==='member')render();
+    else {render();}
+  }).subscribe();
+}
+
+async function onlineMemberCheckin(status){
+ if(!onlineSession)return;
+ const picked=localStorage.getItem('bm_member_player_id_'+onlineSession.id);
+ if(!picked){alert('กรุณาเลือกชื่อของคุณก่อน');return;}
+ await onlineSetStatusByPlayer(picked,status);
+ localStorage.setItem('bm_member_status_'+onlineSession.id,status);
+}
+
+function onlineMemberUI(){
+ if(!onlineSession||onlineRole!=='member')return;
+ const playersSection=document.getElementById('players');
+ if(!playersSection)return;
+ playersSection.innerHTML=`
+ <div class="onlineMember">
+   <b>🌐 วันเล่นออนไลน์</b><br>
+   <span class="small">เลือกชื่อของคุณ แล้วกด 🟢 มาแล้ว เมื่อมาถึงสนาม ระบบจะอัปเดตให้ผู้จัดทันที</span>
+ </div>
+ <div class="card">
+   <div class="big">${esc(onlineSession.title||onlineSession.name)}</div>
+   <div class="small">รหัส ${esc(onlineSession.code||onlineSession.id)}</div>
+   <br>
+   <label>เลือกชื่อของคุณ</label>
+   <select id="memberNamePick"><option value="">-- เลือกชื่อ --</option>${players.map(p=>`<option value="${esc(p.onlineId||p.id)}">${esc(p.name)}</option>`).join('')}</select>
+   <div class="row" style="margin-top:10px">
+     <button class="checkBtn arrived" onclick="onlineMemberCheckin('arrived')">🟢 มาแล้ว</button>
+   </div>
+ </div>
+ <div class="card">
+   <h3>สถานะตอนนี้</h3>
+   <div id="memberStatusList">${players.map(p=>`<div class="memberPick"><div><span class="memberName">${esc(p.name)}</span></div><span>${p.status==='arrived'?'🟢 มาแล้ว':'⚪ ยังไม่มา'}</span></div>`).join('')}</div>
+ </div>`;
+ const pick=document.getElementById('memberNamePick');
+ if(pick){pick.value=localStorage.getItem('bm_member_player_id_'+onlineSession.id)||'';pick.onchange=()=>localStorage.setItem('bm_member_player_id_'+onlineSession.id,pick.value);}
+}
+
+function onlineOrganizerUI(){
+ if(!onlineSession||onlineRole!=='organizer')return;
+ const card=document.getElementById('sessionCard');
+ if(!card)return;
+ const tools=document.getElementById('sessionTools');
+ const counts={arrived:players.filter(p=>p.status==='arrived').length,absent:players.filter(p=>p.status!=='arrived').length};
+ if(tools)tools.innerHTML=`<div class="row"><button class="secondary" onclick="onlineCopyLink()">📋 คัดลอกลิงก์เช็กชื่อ</button><button class="primary" onclick="onlineShareLink()">📤 ส่งลิงก์ให้เพื่อน</button><span class="small">🟢 ${counts.arrived} · ⚪ ${counts.absent}</span></div><div class="small" style="margin-top:8px;word-break:break-all">ลิงก์เช็กชื่อ: ${esc(onlineJoinUrl(onlineSession.code))}</div>`;
+}
+
+function onlineCopyLink(){if(!onlineSession)return;navigator.clipboard?.writeText(onlineJoinUrl(onlineSession.code)).then(()=>alert('คัดลอกลิงก์เช็กชื่อแล้ว')).catch(()=>prompt('คัดลอกลิงก์นี้:',onlineJoinUrl(onlineSession.code)));}
+async function onlineShareLink(){if(!onlineSession)return;const url=onlineJoinUrl(onlineSession.code);const text=`🏸 ${onlineSession.title}\nเช็กชื่อวันนี้ได้ที่ลิงก์นี้\n${url}`;if(navigator.share){try{await navigator.share({title:'เช็กชื่อแบดมินตัน',text,url});return;}catch(e){}}(navigator.clipboard ? navigator.clipboard.writeText(text).then(()=>alert('คัดลอกข้อความแชร์แล้ว นำไปวางใน LINE ได้เลย')).catch(()=>prompt('คัดลอกข้อความนี้:',text)) : prompt('คัดลอกข้อความนี้:',text));}
+
+// Override the old local-only session creation/join functions.
+createSession=onlineCreateSession;
+joinSessionPrompt=async function(){
+ const code=(prompt('ใส่รหัสวันเล่น 6 ตัวอักษร','')||'').trim().toUpperCase();
+ if(code)await onlineLoadSession(code);
+};
+setSelfPresent=async function(){await onlineMemberCheckin('arrived');};
+
+// Keep organizer's local edits mirrored to the online session.
+const _oldSetStatus=setStatus;
+setStatus=async function(i,status){
+ _oldSetStatus(i,status);
+ if(onlineSession&&onlineRole==='organizer'){
+   const p=players[i];
+   if(p?.onlineId) await onlineSetStatusByPlayer(p.onlineId,status);
+   else await onlineSyncLocalPlayers();
+ }
+};
+const _oldChangeLevel=changeLevel;
+changeLevel=async function(i,l){
+ _oldChangeLevel(i,l);
+ if(onlineSession&&onlineRole==='organizer'){
+   const p=players[i];
+   if(p?.onlineId) await sbClient.from('players').update({level:l}).eq('id',p.onlineId);
+   await onlineSyncLocalPlayers();
+ }
+};
+
+// Sync newly added/removed/edited players and poll check-in status so the organizer
+// still sees updates even when Realtime is delayed or blocked by a browser/network.
+const _oldAdd=add;
+add=async function(){
+  _oldAdd();
+  if(onlineSession&&onlineRole==='organizer') await onlineSyncLocalPlayers();
+  render();
+};
+const _oldDel=del;
+del=async function(i){
+  const p=players[i];
+  _oldDel(i);
+  if(onlineSession&&onlineRole==='organizer' && p?.onlineId){
+    await sbClient.from('session_players').delete().eq('session_id',onlineSession.id).eq('player_id',p.onlineId);
+  }
+  if(onlineSession&&onlineRole==='organizer') await onlineLoadMembers();
+  render();
+};
+
+// Refresh from Supabase every 2 seconds for reliable cross-device check-in.
+setInterval(async()=>{
+  if(!onlineSession) return;
+  try{
+    if(onlineRole==='organizer') await onlineSyncLocalPlayers();
+    await onlineLoadMembers();
+    render();
+  }catch(e){console.error('online refresh',e);}
+},2000);
+
+// Paste/import adds local players first; sync after the event loop.
+const _oldRender=render;
+render=function(){
+ _oldRender();
+ if(onlineSession&&onlineRole==='member')onlineMemberUI();
+ if(onlineSession&&onlineRole==='organizer')onlineOrganizerUI();
+};
+
+async function onlineBoot(){
+ if(onlineBooted)return; onlineBooted=true;
+ const params=new URLSearchParams(location.search);
+ const join=params.get('join');
+ if(join){await onlineLoadSession(join.toUpperCase());return;}
+ const saved=onlineGetSaved();
+ if(saved.code&&saved.role==='organizer'){
+   const {data}=await sbClient.from('sessions').select('*').eq('code',saved.code).maybeSingle();
+   if(data){onlineSession=data;onlineRole='organizer';onlineSubscribe();await onlineLoadMembers();render();return;}
+ }
+ render();
+}
+
+// Sync current organizer list after paste/add actions with a light debounce.
+let onlineSyncTimer=null;
+function scheduleOnlineSync(){
+ if(!onlineSession||onlineRole!=='organizer')return;
+ clearTimeout(onlineSyncTimer); onlineSyncTimer=setTimeout(()=>onlineSyncLocalPlayers().then(()=>{render();}),350);
+}
+const _oldSave=save;
+save=function(){_oldSave();scheduleOnlineSync();};
+
+// Start after the existing V8 scripts have initialized.
+onlineBoot();
+</script>
+</body>
+</html>
