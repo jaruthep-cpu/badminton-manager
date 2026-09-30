@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Badminton Manager v2</title>
+<title>Badminton Manager - Online Check-in</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f3f6f4;color:#17332a;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
 header{background:#087f4f;color:white;padding:18px;position:sticky;top:0;z-index:5}header h1{margin:0;font-size:24px}header p{margin:3px 0 0;font-size:13px;opacity:.9}
@@ -52,7 +52,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;borde
 </style>
 </head>
 <body>
-<header><h1>🏸 Badminton Manager V9 ONLINE</h1><p>6–18 คน • 6 คน/คอร์ต • BB=1 / BG=2 / N=3</p></header>
+<header><h1>🏸 Badminton Manager ONLINE</h1><p>6–18 คน • 6 คน/คอร์ต • BB=1 / BG=2 / N=3</p></header>
 <main>
 
 <div class="card" id="sessionCard">
@@ -811,7 +811,7 @@ render();
 
 <script>
 /* =========================================================
-   V9 ONLINE - Supabase realtime check-in
+   V9.1 ONLINE - Supabase realtime check-in
    ========================================================= */
 const SUPABASE_URL='https://fhgtfduotwakdvdyicox.supabase.co';
 const SUPABASE_KEY='sb_publishable_P6Le1b1rAaNlocQ6CDZiiA_dIjVRA5O';
@@ -937,14 +937,14 @@ function onlineMemberUI(){
    <div class="small">รหัส ${esc(onlineSession.code||onlineSession.id)}</div>
    <br>
    <label>เลือกชื่อของคุณ</label>
-   <select id="memberNamePick"><option value="">-- เลือกชื่อ --</option>${players.map(p=>`<option value="${esc(p.onlineId||p.id)}">${esc(p.name)} (${esc(p.level)})</option>`).join('')}</select>
+   <select id="memberNamePick"><option value="">-- เลือกชื่อ --</option>${players.map(p=>`<option value="${esc(p.onlineId||p.id)}">${esc(p.name)}</option>`).join('')}</select>
    <div class="row" style="margin-top:10px">
      <button class="checkBtn arrived" onclick="onlineMemberCheckin('arrived')">🟢 มาแล้ว</button>
    </div>
  </div>
  <div class="card">
    <h3>สถานะตอนนี้</h3>
-   <div id="memberStatusList">${players.map(p=>`<div class="memberPick"><div><span class="memberName">${esc(p.name)}</span><span class="memberLevel">${esc(p.level)}</span></div><span>${p.status==='arrived'?'🟢 มาแล้ว':'⚪ ยังไม่มา'}</span></div>`).join('')}</div>
+   <div id="memberStatusList">${players.map(p=>`<div class="memberPick"><div><span class="memberName">${esc(p.name)}</span></div><span>${p.status==='arrived'?'🟢 มาแล้ว':'⚪ ยังไม่มา'}</span></div>`).join('')}</div>
  </div>`;
  const pick=document.getElementById('memberNamePick');
  if(pick){pick.value=localStorage.getItem('bm_member_player_id_'+onlineSession.id)||'';pick.onchange=()=>localStorage.setItem('bm_member_player_id_'+onlineSession.id,pick.value);}
@@ -956,11 +956,11 @@ function onlineOrganizerUI(){
  if(!card)return;
  const tools=document.getElementById('sessionTools');
  const counts={arrived:players.filter(p=>p.status==='arrived').length,absent:players.filter(p=>p.status!=='arrived').length};
- if(tools)tools.innerHTML=`<div class="row"><button class="secondary" onclick="onlineCopyLink()">📋 คัดลอกลิงก์เช็กชื่อ</button><button class="secondary" onclick="onlineShareLink()">📤 แชร์เข้า LINE</button><span class="small">🟢 ${counts.arrived} · ⚪ ${counts.absent}</span></div>`;
+ if(tools)tools.innerHTML=`<div class="row"><button class="secondary" onclick="onlineCopyLink()">📋 คัดลอกลิงก์เช็กชื่อ</button><button class="primary" onclick="onlineShareLink()">📤 ส่งลิงก์ให้เพื่อน</button><span class="small">🟢 ${counts.arrived} · ⚪ ${counts.absent}</span></div><div class="small" style="margin-top:8px;word-break:break-all">ลิงก์เช็กชื่อ: ${esc(onlineJoinUrl(onlineSession.code))}</div>`;
 }
 
 function onlineCopyLink(){if(!onlineSession)return;navigator.clipboard?.writeText(onlineJoinUrl(onlineSession.code)).then(()=>alert('คัดลอกลิงก์เช็กชื่อแล้ว')).catch(()=>prompt('คัดลอกลิงก์นี้:',onlineJoinUrl(onlineSession.code)));}
-async function onlineShareLink(){if(!onlineSession)return;const url=onlineJoinUrl(onlineSession.code);const text=`🏸 ${onlineSession.title}\nเช็กชื่อวันนี้ได้ที่ลิงก์นี้\n${url}`;if(navigator.share){try{await navigator.share({title:'เช็กชื่อแบดมินตัน',text,url});return;}catch(e){}}navigator.clipboard?.writeText(text).then(()=>alert('คัดลอกข้อความแชร์แล้ว นำไปวางใน LINE ได้เลย')).catch(()=>prompt('คัดลอกข้อความนี้:',text));}
+async function onlineShareLink(){if(!onlineSession)return;const url=onlineJoinUrl(onlineSession.code);const text=`🏸 ${onlineSession.title}\nเช็กชื่อวันนี้ได้ที่ลิงก์นี้\n${url}`;if(navigator.share){try{await navigator.share({title:'เช็กชื่อแบดมินตัน',text,url});return;}catch(e){}}(navigator.clipboard ? navigator.clipboard.writeText(text).then(()=>alert('คัดลอกข้อความแชร์แล้ว นำไปวางใน LINE ได้เลย')).catch(()=>prompt('คัดลอกข้อความนี้:',text)) : prompt('คัดลอกข้อความนี้:',text));}
 
 // Override the old local-only session creation/join functions.
 createSession=onlineCreateSession;
