@@ -789,6 +789,7 @@ render();
       input.value='';
       save();
       render();
+      if(typeof onlineSyncLocalPlayers==='function' && onlineSession && onlineRole==='organizer') onlineSyncLocalPlayers();
 
       let msg=document.getElementById('linePasteMsg');
       if(!msg){
@@ -898,10 +899,14 @@ async function onlineLoadMembers(){
 }
 
 async function onlineSetStatusByPlayer(playerId,status){
- if(!onlineSession)return;
+ if(!onlineSession)return false;
  status=status==='arrived'?'arrived':'absent';
- const r=await sbClient.from('session_players').update({status}).eq('session_id',onlineSession.id).eq('player_id',playerId);
- if(r.error)alert('อัปเดตสถานะไม่สำเร็จ\n'+r.error.message);
+ const r=await sbClient.from('session_players').update({status}).eq('session_id',onlineSession.id).eq('player_id',playerId).select('id,status,player_id');
+ if(r.error){console.error('check-in update',r.error);alert('อัปเดตสถานะไม่สำเร็จ\n'+r.error.message);return false;}
+ if(!r.data || !r.data.length){alert('ไม่พบรายชื่อในวันเล่นนี้\nให้ผู้จัดเพิ่มชื่อนี้ในรายการก่อน');return false;}
+ await onlineLoadMembers();
+ render();
+ return true;
 }
 
 function onlineSubscribe(){
@@ -989,6 +994,35 @@ changeLevel=async function(i,l){
    await onlineSyncLocalPlayers();
  }
 };
+
+// Sync newly added/removed/edited players and poll check-in status so the organizer
+// still sees updates even when Realtime is delayed or blocked by a browser/network.
+const _oldAdd=add;
+add=async function(){
+  _oldAdd();
+  if(onlineSession&&onlineRole==='organizer') await onlineSyncLocalPlayers();
+  render();
+};
+const _oldDel=del;
+del=async function(i){
+  const p=players[i];
+  _oldDel(i);
+  if(onlineSession&&onlineRole==='organizer' && p?.onlineId){
+    await sbClient.from('session_players').delete().eq('session_id',onlineSession.id).eq('player_id',p.onlineId);
+  }
+  if(onlineSession&&onlineRole==='organizer') await onlineLoadMembers();
+  render();
+};
+
+// Refresh from Supabase every 2 seconds for reliable cross-device check-in.
+setInterval(async()=>{
+  if(!onlineSession) return;
+  try{
+    if(onlineRole==='organizer') await onlineSyncLocalPlayers();
+    await onlineLoadMembers();
+    render();
+  }catch(e){console.error('online refresh',e);}
+},2000);
 
 // Paste/import adds local players first; sync after the event loop.
 const _oldRender=render;
